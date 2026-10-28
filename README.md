@@ -1,82 +1,75 @@
-![](https://img.shields.io/github/release-date/iXab3r/MicSwitch.svg) ![](https://img.shields.io/github/downloads/iXab3r/MicSwitch/total.svg) ![](https://img.shields.io/github/last-commit/iXab3r/MicSwitch.svg)
-[![Discord Chat](https://img.shields.io/discord/513749321162686471.svg)](https://discord.gg/BExRm22)  
+# 輕聲 · MicSwitch 中文輕量版
 
-# Intro
-There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo, Skype, in-game audio chats, etc. And all of them have DIFFERENT ways of handling push-to-talk and always-on microphone functionality. I bet many of you know how distracting it could be when someone forgets to turn off a microphone. I will try to explain what I mean using a feature matrix.
+預設靜音，按住滑鼠側鍵說話，鬆開立即靜音。全中文設定與即時音量合併在同一個懸浮窗。
 
-| App  | Microphone status overlay | Keyboard support | Mouse buttons support | Audio notification |
-| -------------: | :-------------: | :-------------: | :-------------: | :-------------: |
-| MicSwitch |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported") |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported") |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported") |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")
-| Discord  |  In-game only  |   ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")   |  ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported") |
-| TeamSpeak  |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")   |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |   ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |
-| Ventrilo  | ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |   ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |  [Has a bug dating 2012](http://forum.ventrilo.com/showthread.php?t=61203 "Has a bug dating 2012")  |   ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |
-| Skype  | ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |  Hard-coded Ctrl+M  |  ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |  ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported") |
+這是 [iXab3r/MicSwitch](https://github.com/iXab3r/MicSwitch) 的衍生版本。依使用需求大幅重寫，以 Windows 自帶 WPF、Core Audio 和低階滑鼠事件取代上游的大型依賴鏈。保留上游 Git 歷史及原始程式碼；中文入口位於 `Sources/MicSwitch.Chinese`，不需要初始化上游子模組。
 
-MicSwitch allows you to mute/unmute your system microphone using a predefined system-wide hotkey which will affect any program that uses microphone (no more heavy breathing during Skype conferences, hooray!)
-Also it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) and a configurable overlay with scaling/transparency support. All these features allow you to seamlessly switch between chat apps and use THE SAME input system with overlay and notifications support.
+## 使用
 
-# Features / Bugfixes priority (click to vote or post feature/bug request)
-[![Requests](https://feathub.com/iXab3r/MicSwitch?format=svg)](https://feathub.com/iXab3r/MicSwitch)
+1. 退出原版 MicSwitch，避免兩個程式同時控制麥克風。
+2. 將 `MicSwitch.Chinese.exe` 放到固定位置，雙擊執行。
+3. 預設使用側鍵 1；按住開麥，鬆開靜音。齒輪可直接在原視窗展開設定。
 
-# Installation
-- You can download the latest version of installer here - [download](https://github.com/iXab3r/MicSwitch/releases/latest).
-- After initial installation application will periodically check Github for updates
+- 拖曳標題或狀態區移動視窗；「−」收至系統匣，雙擊系統匣圖示重新顯示。
+- 預設控制所有目前啟用的麥克風。選擇特定「開麥裝置」後，按住時只開啟該裝置，其他裝置仍保持靜音。
+- 預設攔截所選側鍵的原功能，避免同時觸發瀏覽器上一頁／下一頁。可在設定關閉。
+- 支援側鍵 1／2、預設通訊麥克風、指定麥克風、置頂、透明度、大小、開機啟動。
+- 預設退出後保持靜音；取消「退出後保持靜音」後，正常退出會恢復各裝置在本次程式啟動／接入時的靜音狀態。
+- 「麥克風權限」開啟 Windows 的權限設定。程式透過裝置靜音控制通話，不會修改 Windows 隱私授權。
+- `dBFS` 表示相對數位滿刻度的輸入峰值，不是環境聲壓級。音量軌跡來自真實麥克風輸入，沒有示意動畫或錄音檔。
 
-## Features
-- Multiple microphones support (useful for streamers) - ALL microphones in your system could be muted/unmuted by a single key press
-- System-wide hotkeys (supports mouse XButtons)
-- Always-on-top configurable (scale, transparency) Overlay - could be disable if not needed
-- Mute/unmute audio notification (with custom audio files support)
-- Customizable tray and overlay icons
-- Multiple hotkeys support
-- Auto-startup (could be Minimized by default)
-- Three Audio modes: Push-to-talk, Push-to-mute and Toggle mute
-- Overlay visibility could be linked to microphone state, i.e. it will be shown only when Muted/Unmuted
-- Auto-updates via Github
+## 輕量化與保護
 
-## Media
-![UI](https://i.imgur.com/Fz0nTZP.png)
+- 單一 EXE，免安裝；Windows 10／11 x64，使用系統已有的 .NET Framework 4.x。
+- 不捆綁 .NET 6、Electron、WebView、NuGet 套件或上游 UI 元件；不聯網、不自動更新、不寫入音訊檔。
+- 同一個 EXE 會額外啟動一個無視窗的保護程序。主程序異常結束或停止回應後，保護程序約 2 秒內嘗試靜音所有啟用的輸入裝置。
+- 鎖定／休眠時關閉開麥狀態，恢復後需重新按鍵。約每 2 秒更新裝置清單。
+- 裝置控制失敗時顯示錯誤並嘗試全部靜音，不顯示虛假的「已靜音」。
+- 設定儲存在 `%LOCALAPPDATA%\MicSwitch.Chinese\settings.xml`；錯誤記錄位於同一目錄，不包含音訊。
 
-### Overlay with configurable size/opacity
-![Overlay with configurable size/opacity](https://i.imgur.com/1Jf1RrH.gif)
+本版專注於側鍵按住說話，沒有保留上游切換式開麥、鍵盤組合熱鍵、自訂提示音、GIF、自動更新等非本次需求功能。原版安裝與設定不會被覆寫，也不自動匯入英文版設定。
 
-### Configurable Audio notification when microphone is muted/unmuted
-![Configurable Audio notification when microphone is muted/unmuted](https://i.imgur.com/TmvJizg.png) 
+## 建置
 
-### Customizable overlay/tray icons
-![Customizable overlay/tray icons](https://i.imgur.com/Bq0yHnK.png)
+在 Windows PowerShell 或 PowerShell 中執行：
 
-### Auto-update via Github
-![Auto-update via Github](https://i.imgur.com/O4SIuDy.gif)
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File Sources\MicSwitch.Chinese\build.ps1
+```
 
-## How to build application
-* I am extensively using [git-submodules](https://git-scm.com/docs/git-submodule "git-submodules") so you may have to run extra commands (git submodule update) if your git-client does not fully support this tech. I would highly recommend to use [Git Extensions](https://gitextensions.github.io/ "Git Extensions") which is awesome, free and open-source and makes submodules integration seamless
-* The main "catch-up-moment" is that you need to run InitSymlinks.cmd before building an application - this is due to the fact that git symlinks are not supported on some older versions of Windows and I am using them to create links to submodules
-* I am usually using [Jetbrains Rider](https://www.jetbrains.com/rider/ "Jetbrains Rider") so there MAY be some issues if you are using Microsoft Visual Studio, although I am trying to keep things compatible
+輸出：`Sources\MicSwitch.Chinese\bin\MicSwitch.Chinese.exe`。使用 Windows 隨附的 C# 編譯器，不需要另外安裝 SDK。圖示已包含在原始碼目錄；修改圖示時可先執行 `make-icons.ps1`。
 
-### Build from command line
-1. git clone https://github.com/iXab3r/MicSwitch.git
-2. cd MicSwitch
-3. remove submodule DeploymentTools - MicSwitch's installer built and oublished as a part of another project and it's not included into this repository
-4. git submodule init 
-5. git submodule update --checkout
-6. InitSymlinks.cmd
-7. dotnet build Sources/MicSwitch
+## 驗證
 
-That's it. Portable version will be in **bin** folder. Framework-dependent version
+本機實測涵蓋三個輸入端點（Realtek 外部麥克風、網易虛擬音訊、Intel 麥克風陣列）：
 
-## Linux/MacOS Support ?
-Probably not going to happen in the nearest future because in it's core MicSwitch is a WPF application, technology that Microsoft does not want to port at all.
-Migrating to something cross-platform like Avalon, Xamarin is an option, but not a cheap one, unfortunately I don't have so much spare time to do it now.
+- 實際靜音／開麥讀回與輸入峰值。
+- 經全域滑鼠 hook 注入側鍵 1／2，驗證按下開麥、鬆開靜音。
+- 鎖定防護狀態、設定保存／載入、收起／展開／開麥三種畫面的渲染檢查。
+- 從獨立程序讀回系統麥克風狀態，並在開麥時強制結束主程序，驗證保護程序完成靜音。
 
-Meanwhile you could take a look at
-### MacOS
-**MuteKey** (thanks to benpeter for finding it): https://apps.apple.com/us/app/mutekey/id1509590766?mt=12
+自動化側鍵測試不等於已完成實體側鍵與微信雙人通話測試。USB 拔插、真實系統休眠／鎖定、開機登入、獨占模式及其他電腦的音訊驅動仍需使用時確認。
 
-### Linux
-???
+開發診斷參數（會短暫改變麥克風狀態的測試須在不通話時執行）：
 
-## Contacts
-- Feel free to contact me via PM in Discord *Xab3r#3780* or [Reddit](https://www.reddit.com/user/Xab3r) 
-- [Discord chat](https://discord.gg/BExRm22 "Discord chat")
-- [Issues tracker](https://github.com/iXab3r/MicSwitch/issues)
+```text
+--probe <報告.txt>              只讀裝置狀態
+--audio-test <報告.txt>         驗證音訊接口並恢復原狀態
+--ui-test <測試資料夾>          自動側鍵測試、截圖，完成後恢復原狀態
+--resilience-test <新資料夾>    異常結束與保護程序測試，完成後恢復原狀態
+--profile <資料夾>             使用獨立設定資料夾
+```
+
+## 上游
+
+原專案：iXab3r/MicSwitch；基底提交：`97ed82e`。原始英文介紹保存在根目錄的 `README.upstream.md`。按住說話的控制語義沿用上游 `MicrophoneControllerViewModel` 的 `Controller.Mute = !isActive`，本版另行實作原生音訊適配器、側鍵 hook、中文 UI 與保護程序。
+
+上游原有著作權與授權狀態保持原樣，本 fork 不對上游程式碼新增或替換授權。
+
+## 介面預覽
+
+![開麥時的即時電平](docs/chinese/speaking.png)
+
+![同一視窗內展開設定](docs/chinese/settings.png)
+
+[本機驗證與性能記錄](docs/chinese/VALIDATION.md)
