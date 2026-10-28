@@ -1,0 +1,20 @@
+PASS startup mute
+PASS XButton1 down
+PASS XButton1 up
+PASS XButton2 down
+PASS XButton2 up
+PASS middle mouse down
+PASS middle mouse up
+PASS F8 down
+PASS F8 repeat and release
+PASS wrong modifiers stay muted
+PASS Ctrl+Alt+F9 down
+PASS modifier first release mutes
+PASS repeat cannot reopen after modifier release
+PASS interactive key binding Ctrl+F8
+PASS recorded hotkey works
+PASS lock blocks unmute
+PASS suspend blocks unmute
+PASS settings persist
+PASS missing device fails closed
+PASS device selection recovers

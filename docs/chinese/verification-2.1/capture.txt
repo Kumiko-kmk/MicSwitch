@@ -1,0 +1,10 @@
+endpoint 0 initial_mute=True muted_peak=2.00000002670286E-10
+released_mute=True released_peak=2.00000002670286E-10
+PASS endpoint 1 muted/released capture silence; open_nonzero=0.000971045752521604
+endpoint 1 initial_mute=True muted_peak=0
+released_mute=True released_peak=0
+PASS endpoint 2 muted/released capture silence; open_nonzero=0
+endpoint 2 initial_mute=True muted_peak=0
+released_mute=True released_peak=0
+PASS endpoint 3 muted/released capture silence; open_nonzero=0.000153393266373314
+PASS actual PCM gate, no audio saved

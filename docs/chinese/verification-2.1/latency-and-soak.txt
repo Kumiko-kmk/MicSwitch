@@ -1,0 +1,6 @@
+Press_ms n=100 min=15.02 median=30.89 p95=31.87 max=33.41 mean=25.41
+Release_ms n=100 min=14.85 median=15.72 p95=16.75 max=17.21 mean=15.81
+msedge focus_requested=True Press_ms n=20 min=15.03 median=30.82 p95=32.11 max=32.53 mean=28.85 Release_ms n=20 min=14.93 median=15.83 p95=16.63 max=16.67 mean=15.80
+soak_seconds=600 cycles=566
+PASS guardian after forced termination
+PASS all checks

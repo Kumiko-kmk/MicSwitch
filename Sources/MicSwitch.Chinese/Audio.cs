@@ -56,10 +56,10 @@ namespace MicSwitch.Chinese
                 Audio.Check(d.OpenPropertyStore(0, out props));
                 var key = new PropertyKey { fmtid = new Guid("a45c254e-df1c-4efd-8020-67d146a850e0"), pid = 14 };
                 PropVariant v; Audio.Check(props.GetValue(ref key, out v));
-                try { Name = Marshal.PtrToStringUni(v.pointer) ?? "麥克風"; }
+                try { Name = Marshal.PtrToStringUni(v.pointer) ?? "麦克风"; }
                 finally { PropVariantClear(ref v); }
             }
-            catch { Name = "麥克風"; }
+            catch { Name = "麦克风"; }
             finally { Audio.Release(props); }
             object obj; var iid = typeof(IAudioEndpointVolume).GUID;
             Audio.Check(d.Activate(ref iid, 23, IntPtr.Zero, out obj)); volume = (IAudioEndpointVolume)obj;
@@ -116,7 +116,7 @@ namespace MicSwitch.Chinese
         public void Dispose() { StopMeter(); Audio.Release(meter); meter = null; Audio.Release(volume); volume = null; Audio.Release(device); device = null; }
         [DllImport("ole32.dll")] private static extern int PropVariantClear(ref PropVariant value);
     }
-    [StructLayout(LayoutKind.Sequential)] internal struct PropertyKey { internal Guid fmtid; internal uint pid; }
+    [StructLayout(LayoutKind.Sequential)] public struct PropertyKey { internal Guid fmtid; internal uint pid; }
     [StructLayout(LayoutKind.Explicit, Size = 24)] internal struct PropVariant { [FieldOffset(0)] internal ushort vt; [FieldOffset(8)] internal IntPtr pointer; }
     [ComImport, Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")] internal class DeviceEnumerator { }
     [ComImport, Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]

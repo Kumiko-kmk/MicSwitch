@@ -1,0 +1,4 @@
+PASS Weixin foreground independently confirmed for all 100 cycles
+press_ms median=31.152 p95=32.4312 max=33.0968
+release_ms median=15.6485 p95=16.6357 max=17.5844
+Priority=AboveNormal
