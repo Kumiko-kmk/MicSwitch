@@ -41,3 +41,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File Sources\MicSwitch.Chinese\bu
 ![悬浮窗](docs/chinese/v2.1-collapsed.png)
 
 ![设置](docs/chinese/v2.1-settings.png)
+## 2.1.1
+修复悬浮窗刷新依赖和临时输入延迟导致的永久锁定，加入全局按键状态后备检查。[全屏回归记录](docs/chinese/verification-2.1.1/README.md)。

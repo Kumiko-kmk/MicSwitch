@@ -1,0 +1,6 @@
+Fullscreen foreground, cursor away from overlay
+Press_ms n=100 min=14.98 median=31.00 p95=32.39 max=33.30 mean=24.70
+Release_ms n=100 min=14.86 median=16.12 p95=17.21 max=17.65 mean=16.18
+soak_seconds=0 cycles=0
+PASS guardian after forced termination
+PASS all checks

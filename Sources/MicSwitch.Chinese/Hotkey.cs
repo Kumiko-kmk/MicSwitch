@@ -33,6 +33,7 @@ namespace MicSwitch.Chinese
   private long inputPulse;
   private int version,seenVersion;
   private Forms.Timer heartbeat;
+  private bool physicalHeld, fallbackHeld;
   internal bool IsRecording{get{return recording;}}
   internal long Pulse{get{return Interlocked.Read(ref inputPulse);}}
   internal Hotkey(Engine engine){
@@ -51,11 +52,25 @@ namespace MicSwitch.Chinese
    try{
     threadId=GetCurrentThreadId();keyboard=SetWindowsHookEx(13,keyboardProc,GetModuleHandle(null),0);mouse=SetWindowsHookEx(14,mouseProc,GetModuleHandle(null),0);
     if(keyboard==IntPtr.Zero||mouse==IntPtr.Zero)throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
-    heartbeat=new Forms.Timer{Interval=100};heartbeat.Tick+=delegate{Interlocked.Exchange(ref inputPulse,Stopwatch.GetTimestamp());};
+    heartbeat=new Forms.Timer{Interval=10};heartbeat.Tick+=delegate{Interlocked.Exchange(ref inputPulse,Stopwatch.GetTimestamp());PollPhysical();};
     heartbeat.Start();Interlocked.Exchange(ref inputPulse,Stopwatch.GetTimestamp());ready.Set();Forms.Application.Run();
    }catch(Exception e){startupError=e;ready.Set();}
    finally{if(heartbeat!=null)heartbeat.Dispose();if(keyboard!=IntPtr.Zero)UnhookWindowsHookEx(keyboard);if(mouse!=IntPtr.Zero)UnhookWindowsHookEx(mouse);engine.Press(false);}
   }
+  // Independent of cursor position and of whether a foreground app consumes hook events.
+  private static bool Physical(int key){return (GetAsyncKeyState(key)&0x8000)!=0;}
+  private void PollPhysical(){
+   var b=Current;
+   if(recording){physicalHeld=false;fallbackHeld=false;return;}
+   if(suppressed[b.Key]&&!fallbackHeld)return; // Suppressed hook input does not update async key state.
+   bool held=Physical(b.Key);
+   int mods=(Physical(17)?1:0)|(Physical(18)?2:0)|(Physical(16)?4:0)|(Physical(91)||Physical(92)?8:0);
+   bool valid=(mods&b.Modifiers)==b.Modifiers&&!engine.Locked&&!engine.Suspended;
+   if(held&&!physicalHeld&&valid){fallbackHeld=true;engine.Press(true);}
+   if(fallbackHeld&&(!held||!valid)){fallbackHeld=false;engine.Press(false);}
+   physicalHeld=held;
+  }
+  [DllImport("user32.dll")]private static extern short GetAsyncKeyState(int key);
   private int Modifiers(){return(down[17]||down[162]||down[163]?1:0)|(down[18]||down[164]||down[165]?2:0)|(down[16]||down[160]||down[161]?4:0)|(down[91]||down[92]?8:0);}
   private bool Handle(int key,bool pressed){
    if(key<0||key>=256)return false;
@@ -87,6 +102,7 @@ namespace MicSwitch.Chinese
     if(key!=0&&Handle(key,pressed))return new IntPtr(1);
    }return CallNextHookEx(mouse,code,wp,lp);
   }
+  internal void DisableHooksForTest(){UnhookWindowsHookEx(keyboard);UnhookWindowsHookEx(mouse);keyboard=IntPtr.Zero;mouse=IntPtr.Zero;}
   public void Dispose(){PostThreadMessage(threadId,0x12,IntPtr.Zero,IntPtr.Zero);thread.Join(2000);ready.Dispose();}
   private delegate IntPtr HookProc(int code,IntPtr wp,IntPtr lp);
   [DllImport("user32.dll",SetLastError=true)]private static extern IntPtr SetWindowsHookEx(int id,HookProc callback,IntPtr module,uint thread);

@@ -35,6 +35,7 @@ namespace MicSwitch.Chinese
    private bool done;
    internal UiTest(Shell s,string folder){
     shell=s;this.folder=folder;Directory.CreateDirectory(folder);
+    steps.Add(delegate{Key(5,true);Thread.Sleep(300);Assert(s.engine.State.Talking,"open before UI stall");Thread.Sleep(3500);Assert(s.engine.State.Talking&&!s.engine.Locked,"UI stalled 3.5s: control remains active");Key(5,false);Thread.Sleep(300);Assert(!s.engine.State.Talking,"release while UI stalled");});
     steps.Add(delegate{Assert(!s.engine.State.Talking&&s.engine.State.Error==null,"startup mute");s.Capture(Path.Combine(folder,"collapsed.png"));Key(5,true);});
     steps.Add(delegate{Assert(s.engine.State.Talking,"XButton1 down");s.Capture(Path.Combine(folder,"talking.png"));Key(5,false);});
     steps.Add(delegate{Assert(!s.engine.State.Talking,"XButton1 up");s.hook.Configure(new Binding(6,0));Key(6,true);});
@@ -55,7 +56,9 @@ namespace MicSwitch.Chinese
     steps.Add(delegate{Assert(!s.engine.State.Talking,"suspend blocks unmute");Key(119,false);Key(162,false);s.engine.Suspended=false;s.hook.Configure(new Binding(5,0));s.config.Key=5;s.config.Modifiers=0;s.Save();Assert(Settings.Load().Key==5,"settings persist");s.Expand(true);});
     steps.Add(delegate{s.Capture(Path.Combine(folder,"settings.png"));s.engine.Selection="missing-test-device";s.engine.Refresh();});
     steps.Add(delegate{Assert(!s.engine.State.Talking&&s.engine.State.Error!=null,"missing device fails closed");s.engine.Selection="all";s.engine.Refresh();});
-    steps.Add(delegate{Assert(s.engine.State.Error==null,"device selection recovers");});
+    steps.Add(delegate{Assert(s.engine.State.Error==null,"device selection recovers");s.hook.DisableHooksForTest();Key(5,true);});
+    steps.Add(delegate{Assert(s.engine.State.Talking,"physical fallback without hooks opens");Key(5,false);});
+    steps.Add(delegate{Assert(!s.engine.State.Talking,"physical fallback without hooks releases");});
    }
    private void Assert(bool condition,string text){if(!condition)throw new Exception(text+": "+shell.engine.State.Error);lines.Add("PASS "+text);}
    internal void Tick(){

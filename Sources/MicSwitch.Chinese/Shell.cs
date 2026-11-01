@@ -23,13 +23,14 @@ namespace MicSwitch.Chinese
   internal readonly Settings config;
   private readonly Guardian guard;
   private readonly DispatcherTimer timer;
+  private System.Threading.Timer safety;
   private readonly Forms.NotifyIcon tray;
   private readonly System.Drawing.Icon onIcon,offIcon;
   private readonly Brush green=new SolidColorBrush(Color.FromRgb(88,223,189)),gray=new SolidColorBrush(Color.FromRgb(145,163,189)),red=new SolidColorBrush(Color.FromRgb(238,142,152));
   private bool loading=true,closing,trayTalking;
   private DeviceChoice[] shownDevices;
   private string previousLevel="",previousStatus="";
-  private long beat;
+
   private readonly Diagnostics.UiTest test;
   internal T Find<T>(string name)where T:FrameworkElement{return(T)Window.FindName(name);}
   internal Shell(bool testing)
@@ -72,6 +73,7 @@ namespace MicSwitch.Chinese
    SystemEvents.SessionSwitch+=SessionChanged;SystemEvents.PowerModeChanged+=PowerChanged;
    Window.Closing+=delegate{Close();};
    timer=new DispatcherTimer(DispatcherPriority.Input){Interval=TimeSpan.FromMilliseconds(40)};timer.Tick+=delegate{Tick();};timer.Start();loading=false;
+   safety=new System.Threading.Timer(delegate{try{long now=Stopwatch.GetTimestamp();Interlocked.Exchange(ref engine.UiPulse,hook.Pulse);if(now-hook.Pulse>Stopwatch.Frequency)engine.Press(false);guard.Pulse();}catch(Exception e){engine.Press(false);Program.Log(e);}},null,0,200);
    if(testing)test=new Diagnostics.UiTest(this,Settings.Folder);
   }
   internal void Expand(bool show){if(!show)hook.CancelRecord();Find<StackPanel>("SettingsPanel").Visibility=show?Visibility.Visible:Visibility.Collapsed;Window.Width=show?240:76;}
@@ -95,9 +97,9 @@ namespace MicSwitch.Chinese
   private void PowerChanged(object sender,PowerModeChangedEventArgs e){if(e.Mode==PowerModes.Suspend){engine.Press(false);engine.Suspended=true;}if(e.Mode==PowerModes.Resume){engine.Press(false);engine.Suspended=false;engine.Refresh();}}
   internal void EmergencyMute(){engine.Locked=true;engine.Press(false);}
   private void Tick(){
-   if(closing)return;long now=Stopwatch.GetTimestamp();Interlocked.Exchange(ref engine.UiPulse,now);
-   if(now-hook.Pulse>Stopwatch.Frequency){EmergencyMute();}
-   if(now-beat>Stopwatch.Frequency/3){guard.Pulse();beat=now;}
+   if(closing)return;long now=Stopwatch.GetTimestamp();
+
+
    if(hook.Captured!=null){var b=hook.Captured;hook.Captured=null;hook.Configure(b);config.Key=b.Key;config.Modifiers=b.Modifiers;Save();}
    string bindText=hook.IsRecording?"请按键…":hook.Current.ToString();
    if(!Object.Equals(Find<Button>("BindButton").Content,bindText))Find<Button>("BindButton").Content=bindText;
@@ -116,6 +118,7 @@ namespace MicSwitch.Chinese
   }
   private void Close(){
    if(closing)return;closing=true;timer.Stop();SystemEvents.SessionSwitch-=SessionChanged;SystemEvents.PowerModeChanged-=PowerChanged;
+   using(var stopped=new ManualResetEvent(false)){if(safety!=null){safety.Dispose(stopped);stopped.WaitOne();}}
    hook.Dispose();try{engine.Dispose();guard.Dispose();}catch(Exception e){Program.Log(e);}
    tray.Visible=false;tray.ContextMenuStrip.Dispose();tray.Dispose();onIcon.Dispose();offIcon.Dispose();config.Left=Window.Left;config.Top=Window.Top;Save();
   }

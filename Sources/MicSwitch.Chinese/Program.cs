@@ -19,8 +19,8 @@ using Forms = System.Windows.Forms;
 
 [assembly: AssemblyTitle("MicSwitch 中文轻量版")]
 [assembly: AssemblyDescription("按住热键说话，松开即静音")]
-[assembly: AssemblyVersion("2.1.0.0")]
-[assembly: AssemblyFileVersion("2.1.0.0")]
+[assembly: AssemblyVersion("2.1.1.0")]
+[assembly: AssemblyFileVersion("2.1.1.0")]
 
 namespace MicSwitch.Chinese
 {
