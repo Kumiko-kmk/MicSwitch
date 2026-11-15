@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -11,12 +11,13 @@ namespace MicSwitch.Chinese
  {
   internal static void Log(Exception e){}
   [DllImport("user32.dll")]private static extern void mouse_event(uint flags,uint x,uint y,uint data,UIntPtr extra);
+  [DllImport("user32.dll")]private static extern void keybd_event(byte key,byte scan,uint flags,UIntPtr extra);
   [DllImport("user32.dll")]private static extern bool PostMessage(IntPtr window,uint message,IntPtr w,IntPtr l);
   [DllImport("user32.dll")]private static extern bool SetForegroundWindow(IntPtr window);
-  [DllImport("user32.dll")]private static extern IntPtr GetForegroundWindow(); private static IntPtr expected; private static List<Endpoint> devices;
+  [DllImport("user32.dll")]private static extern IntPtr GetForegroundWindow(); private static bool toggle; private static IntPtr expected; private static List<Endpoint> devices;
   private static double Change(bool open)
   {
-   if(expected!=IntPtr.Zero && GetForegroundWindow()!=expected){SetForegroundWindow(expected);System.Windows.Forms.Application.DoEvents();Thread.Sleep(50);if(GetForegroundWindow()!=expected)throw new Exception("Fullscreen focus lost");}var sw=Stopwatch.StartNew();mouse_event(open?0x80u:0x100u,0,0,1,UIntPtr.Zero);
+   if(expected!=IntPtr.Zero && GetForegroundWindow()!=expected){keybd_event(18,0,0,UIntPtr.Zero);keybd_event(18,0,2,UIntPtr.Zero);SetForegroundWindow(expected);System.Windows.Forms.Application.DoEvents();Thread.Sleep(100);if(GetForegroundWindow()!=expected)throw new Exception("Fullscreen focus lost");}var sw=Stopwatch.StartNew();if(toggle){mouse_event(0x80,0,0,1,UIntPtr.Zero);Thread.Sleep(20);mouse_event(0x100,0,0,1,UIntPtr.Zero);}else mouse_event(open?0x80u:0x100u,0,0,1,UIntPtr.Zero);
    while(sw.ElapsedMilliseconds<2500){System.Windows.Forms.Application.DoEvents();bool matched=true;foreach(var d in devices)if(d.Muted==open)matched=false;if(matched)return sw.Elapsed.TotalMilliseconds;Thread.Sleep(1);}
    throw new Exception("Timeout changing mute="+!open);
   }
@@ -29,25 +30,18 @@ namespace MicSwitch.Chinese
   {
    Thread.CurrentThread.CurrentCulture=CultureInfo.InvariantCulture;
    string exe=args[0],dir=args[1];int duration=args.Length>2?Int32.Parse(args[2]):0;
+   toggle=args.Length>3&&args[3]=="toggle";bool rawOnly=args.Length>4&&args[4]=="raw";
    Directory.CreateDirectory(dir);var report=new List<string>();Process app=null;
-   File.WriteAllText(Path.Combine(dir,"settings.xml"),"<Settings><SideButton>1</SideButton><Key>5</Key><Modifiers>0</Modifiers><Device>all</Device><BlockButton>true</BlockButton><KeepMuted>false</KeepMuted></Settings>");
+   File.WriteAllText(Path.Combine(dir,"settings.xml"),"<Settings><SideButton>1</SideButton><Key>5</Key><Modifiers>0</Modifiers><Device>all</Device><InputVersion>2</InputVersion><ToggleMode>"+(toggle?"true":"false")+"</ToggleMode><BlockButton>false</BlockButton><KeepMuted>false</KeepMuted></Settings>");
    try
    {
     devices=Audio.Enumerate();if(devices.Count==0)throw new Exception("No devices");
-    app=Process.Start(new ProcessStartInfo(exe,"--profile \""+dir+"\""){UseShellExecute=false,WindowStyle=ProcessWindowStyle.Hidden});
+    app=Process.Start(new ProcessStartInfo(exe,(rawOnly?"--raw-only-profile ":"--profile ")+"\""+dir+"\""){UseShellExecute=false,WindowStyle=ProcessWindowStyle.Hidden});
     Thread.Sleep(3000);if(app.HasExited)throw new Exception("App exited");
     foreach(var d in devices)if(!d.Muted)throw new Exception("Startup not muted");
-    var fullscreen=new System.Windows.Forms.Form{FormBorderStyle=System.Windows.Forms.FormBorderStyle.None,Bounds=System.Windows.Forms.Screen.PrimaryScreen.Bounds,TopMost=true,Text="Fullscreen input regression"};fullscreen.Show();System.Windows.Forms.Application.DoEvents();SetForegroundWindow(fullscreen.Handle);expected=fullscreen.Handle;System.Windows.Forms.Cursor.Position=new System.Drawing.Point(400,400); report.Add("Fullscreen foreground, cursor away from overlay"); var press=new List<double>();var release=new List<double>();
+    var fullscreen=new System.Windows.Forms.Form{FormBorderStyle=System.Windows.Forms.FormBorderStyle.None,Bounds=System.Windows.Forms.Screen.PrimaryScreen.Bounds,TopMost=true,Text="Fullscreen input regression"};fullscreen.Show();System.Windows.Forms.Application.DoEvents();SetForegroundWindow(fullscreen.Handle);expected=fullscreen.Handle;System.Windows.Forms.Cursor.Position=new System.Drawing.Point(400,400); report.Add("Fullscreen foreground, cursor away from overlay; toggle="+toggle+" rawOnly="+rawOnly); var press=new List<double>();var release=new List<double>();
     for(int i=0;i<100;i++){press.Add(Change(true));Thread.Sleep(35);release.Add(Change(false));Thread.Sleep(35);}
     report.Add("Press_ms "+Stats(press));report.Add("Release_ms "+Stats(release));expected=IntPtr.Zero;fullscreen.Close();fullscreen.Dispose();
-    foreach(string name in new[]{"msedge","Weixin"})
-    {
-     foreach(var p in Process.GetProcessesByName(name))using(p){if(p.MainWindowHandle!=IntPtr.Zero){
-      bool focused=SetForegroundWindow(p.MainWindowHandle);Thread.Sleep(150);var a=new List<double>();var b=new List<double>();
-      for(int i=0;i<20;i++){a.Add(Change(true));Thread.Sleep(25);b.Add(Change(false));Thread.Sleep(25);}
-      report.Add(name+" focus_requested="+focused+" Press_ms "+Stats(a)+" Release_ms "+Stats(b));break;
-     }}
-    }
     File.WriteAllLines(Path.Combine(dir,"latency.txt"),report);
     var timer=Stopwatch.StartNew();long next=0;int cycle=0;
     using(var csv=new StreamWriter(Path.Combine(dir,"memory.csv"))){

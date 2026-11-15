@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -19,8 +19,8 @@ using Forms = System.Windows.Forms;
 
 [assembly: AssemblyTitle("MicSwitch 中文轻量版")]
 [assembly: AssemblyDescription("按住热键说话，松开即静音")]
-[assembly: AssemblyVersion("2.1.1.0")]
-[assembly: AssemblyFileVersion("2.1.1.0")]
+[assembly: AssemblyVersion("2.2.0.0")]
+[assembly: AssemblyFileVersion("2.2.0.0")]
 
 namespace MicSwitch.Chinese
 {
@@ -42,7 +42,7 @@ namespace MicSwitch.Chinese
             if (args.Length > 1 && args[0] == "--probe") return Diagnostics.Probe(args[1], false);
             if (args.Length > 1 && args[0] == "--audio-test") return Diagnostics.Probe(args[1], true);
 
-            if (args.Length > 1 && args[0] == "--profile") Settings.Folder = System.IO.Path.GetFullPath(args[1]);
+            if (args.Length > 1 && (args[0] == "--profile" || args[0] == "--raw-only-profile")) Settings.Folder = System.IO.Path.GetFullPath(args[1]);
             bool test = args.Length > 1 && args[0] == "--ui-test";
             if (test) Settings.Folder = System.IO.Path.GetFullPath(args[1]);
             bool created;
@@ -58,6 +58,7 @@ namespace MicSwitch.Chinese
                 {
                     var app = new Application { ShutdownMode = ShutdownMode.OnMainWindowClose };
                     var window = new Shell(test);
+                    if(args.Length>0&&args[0]=="--raw-only-profile"){window.hook.DisableHooksForTest();window.hook.DisablePollingForTest=true;}
                     app.DispatcherUnhandledException += delegate(object sender, DispatcherUnhandledExceptionEventArgs e)
                     {
                         Log(e.Exception); window.EmergencyMute();

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -56,9 +56,24 @@ namespace MicSwitch.Chinese
     steps.Add(delegate{Assert(!s.engine.State.Talking,"suspend blocks unmute");Key(119,false);Key(162,false);s.engine.Suspended=false;s.hook.Configure(new Binding(5,0));s.config.Key=5;s.config.Modifiers=0;s.Save();Assert(Settings.Load().Key==5,"settings persist");s.Expand(true);});
     steps.Add(delegate{s.Capture(Path.Combine(folder,"settings.png"));s.engine.Selection="missing-test-device";s.engine.Refresh();});
     steps.Add(delegate{Assert(!s.engine.State.Talking&&s.engine.State.Error!=null,"missing device fails closed");s.engine.Selection="all";s.engine.Refresh();});
-    steps.Add(delegate{Assert(s.engine.State.Error==null,"device selection recovers");s.hook.DisableHooksForTest();Key(5,true);});
+    steps.Add(delegate{Assert(s.engine.State.Error==null,"device selection recovers");s.Find<System.Windows.Controls.ComboBox>("ModeChoice").SelectedIndex=1;s.hook.Block=true;Key(5,true);});
+    steps.Add(delegate{Assert(s.engine.State.Talking,"toggle with interception opens");Key(5,false);});
+    steps.Add(delegate{Assert(s.engine.State.Talking,"toggle with interception retains state");Key(5,true);});
+    steps.Add(delegate{Assert(!s.engine.State.Talking,"toggle with interception closes");Key(5,false);s.hook.Block=false;s.hook.Configure(new Binding(119,0));Key(119,true);});
+    steps.Add(delegate{Assert(s.engine.State.Talking,"keyboard toggle opens");Key(119,true);Key(119,true);Key(119,false);});
+    steps.Add(delegate{Assert(s.engine.State.Talking,"keyboard repeat toggles only once");Key(119,true);});
+    steps.Add(delegate{Assert(!s.engine.State.Talking,"keyboard second press closes");Key(119,false);s.Find<System.Windows.Controls.ComboBox>("ModeChoice").SelectedIndex=0;s.hook.Configure(new Binding(5,0));s.hook.DisableHooksForTest();Key(5,true);});
     steps.Add(delegate{Assert(s.engine.State.Talking,"physical fallback without hooks opens");Key(5,false);});
     steps.Add(delegate{Assert(!s.engine.State.Talking,"physical fallback without hooks releases");});
+    steps.Add(delegate{s.hook.DisablePollingForTest=true;s.hook.ToggleMode=true;s.hook.Configure(new Binding(5,0));Key(5,true);});
+    steps.Add(delegate{Assert(s.engine.State.Talking,"raw input only: toggle opens");Key(5,true);});
+    steps.Add(delegate{Assert(s.engine.State.Talking,"toggle ignores repeated down");Key(5,false);});
+    steps.Add(delegate{Assert(s.engine.State.Talking,"toggle stays open after release");Key(5,true);});
+    steps.Add(delegate{Assert(!s.engine.State.Talking,"second press toggles mute");Key(5,false);});
+    steps.Add(delegate{Assert(!s.engine.State.Talking,"toggle stays muted after release");Assert(s.hook.RawEvents>0,"raw input events received");s.hook.ToggleMode=false;Key(5,true);});
+    steps.Add(delegate{Assert(s.engine.State.Talking,"raw input only: hold opens");Key(5,false);});
+    steps.Add(delegate{Assert(!s.engine.State.Talking,"raw input only: release mutes");s.config.ToggleMode=true;s.Save();Assert(Settings.Load().ToggleMode,"toggle mode persists");});
+
    }
    private void Assert(bool condition,string text){if(!condition)throw new Exception(text+": "+shell.engine.State.Error);lines.Add("PASS "+text);}
    internal void Tick(){

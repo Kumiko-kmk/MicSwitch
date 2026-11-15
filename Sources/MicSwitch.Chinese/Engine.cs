@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -11,7 +11,8 @@ namespace MicSwitch.Chinese
  {
   public int SideButton = 1, Key = 0, Modifiers = 0;
   public string Device = "all";
-  public bool BlockButton = true, KeepMuted = true;
+  public bool BlockButton = false, KeepMuted = true, ToggleMode = false;
+  public int InputVersion = 0;
   public double Left = -10000, Top = -10000;
   public static string Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MicSwitch.Chinese");
   private static readonly XmlSerializer Serializer = new XmlSerializer(typeof(Settings));
@@ -22,6 +23,7 @@ namespace MicSwitch.Chinese
     if(s.Key==0) s.Key=s.SideButton==2?6:5;
     if(!Hotkey.ValidKey(s.Key)) s.Key=5;
     s.Modifiers &= 15;
+    if(s.InputVersion<2){s.BlockButton=false;s.InputVersion=2;}
     if(String.IsNullOrEmpty(s.Device)) s.Device="all";
     return s;
    }} catch { return new Settings { Key=5 }; }

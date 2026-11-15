@@ -1,0 +1,6 @@
+Fullscreen foreground, cursor away from overlay; toggle=True rawOnly=True
+Press_ms n=100 min=33.07 median=35.91 p95=40.10 max=156.20 mean=37.42
+Release_ms n=100 min=32.68 median=36.16 p95=39.86 max=41.38 mean=36.42
+soak_seconds=0 cycles=0
+PASS guardian after forced termination
+PASS all checks

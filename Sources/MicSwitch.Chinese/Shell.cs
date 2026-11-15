@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -41,8 +41,10 @@ namespace MicSwitch.Chinese
    Window.Left=config.Left > -9999?config.Left:area.Right-100;Window.Top=config.Top > -9999?config.Top:area.Top+80;
    Window.SourceInitialized+=delegate{Clamp();};Window.SizeChanged+=delegate{Clamp();};
    guard=new Guardian();engine=new Engine{Selection=config.Device,KeepMuted=config.KeepMuted};
-   try{hook=new Hotkey(engine){Block=config.BlockButton};hook.Configure(new Binding(config.Key,config.Modifiers));}
+   try{hook=new Hotkey(engine){Block=config.BlockButton,ToggleMode=config.ToggleMode};hook.Configure(new Binding(config.Key,config.Modifiers));}
    catch{engine.Dispose();guard.Dispose();throw;}
+   Find<ComboBox>("ModeChoice").SelectedIndex=config.ToggleMode?1:0;
+   Find<ComboBox>("ModeChoice").SelectionChanged+=delegate{if(loading)return;engine.Press(false);config.ToggleMode=Find<ComboBox>("ModeChoice").SelectedIndex==1;hook.ToggleMode=config.ToggleMode;Save();};
    Find<Button>("BindButton").Content=hook.Current.ToString();
    Find<Button>("BindButton").Click+=delegate{hook.Record();Find<Button>("BindButton").Content="请按键…";};
    Find<CheckBox>("BlockToggle").IsChecked=config.BlockButton;Find<CheckBox>("ExitToggle").IsChecked=config.KeepMuted;
